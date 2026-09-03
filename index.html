@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campus Vote — Election Polling</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600;1,700&family=Cinzel:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- React & Router Dependencies -->
+    <script src="vendor/react.production.min.js"></script>
+    <script src="vendor/react-dom.production.min.js"></script>
+    <script src="vendor/remix-router.production.min.js"></script>
+    <script src="vendor/react-router.production.min.js"></script>
+    <script src="vendor/react-router-dom.production.min.js"></script>
+    <script src="vendor/socket.io.min.js"></script>
+    <script src="vendor/babel.min.js"></script>
+
+    <!-- Configure Babel classic React runtime without warnings -->
+    <script>
+      if (window.Babel) {
+        Babel.registerPreset('react-classic', {
+          presets: [[Babel.availablePresets['react'], { runtime: 'classic' }]]
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel" src="app.js" data-presets="react-classic"></script>
+  </body>
+</html>
