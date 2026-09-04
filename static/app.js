@@ -1795,6 +1795,8 @@ function PollDetailPage() {
   const [otpCode, setOtpCode] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
   const [otpSentDemo, setOtpSentDemo] = useState("");
+  const [otpSentEmail, setOtpSentEmail] = useState(false);
+  const [otpMailStatus, setOtpMailStatus] = useState("");
   const [otpVerified, setOtpVerified] = useState(false);
 
   const loadPoll = useCallback(() => {
@@ -1830,7 +1832,9 @@ function PollDetailPage() {
     setError("");
     try {
       const res = await apiFetch("/api/auth/send-otp", { method: "POST" });
-      setOtpSentDemo(res.otp_demo);
+      setOtpSentDemo(res.otp_demo || "");
+      setOtpSentEmail(Boolean(res.sent_via_email));
+      setOtpMailStatus(res.mail_status || "");
       setShowOtpStep(true);
     } catch (err) {
       setError(err.message || "Failed to send OTP code.");
@@ -2085,12 +2089,19 @@ function PollDetailPage() {
             {showOtpStep ? (
               <form onSubmit={handleVerifyOtpAndVote} style={{ marginTop: 20, padding: 20, background: "var(--light-surface)", borderRadius: 14, border: "1.5px solid rgba(234,70,58,0.35)", boxShadow: "var(--shadow-apple)" }}>
                 <h4 style={{ margin: "0 0 6px", color: "var(--text-main)" }}>🔑 Enter 6-Digit Verification Code</h4>
-                <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 12px" }}>
-                  Code sent to <strong>{user.email}</strong> {otpSentDemo && <span>(Security Code Demo: <code style={{ color: "var(--election-red)", fontWeight: 700 }}>{otpSentDemo}</code>)</span>}
+                <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: "0 0 12px", lineHeight: 1.5 }}>
+                  {otpSentEmail ? (
+                    <span>✅ Security code delivered to your inbox: <strong>{user.email}</strong> (check Spam if needed).</span>
+                  ) : (
+                    <span>
+                      Code sent to <strong>{user.email}</strong> {otpSentDemo && <span>(Demo Code: <code style={{ color: "var(--election-red)", fontWeight: 700 }}>{otpSentDemo}</code>)</span>}
+                      {otpMailStatus && !otpSentEmail && <span style={{ display: "block", fontSize: 11.5, color: "#f59e0b", marginTop: 4 }}>ℹ️ Note: {otpMailStatus}</span>}
+                    </span>
+                  )}
                 </p>
-                <div style={{ display: "flex", gap: 10 }}>
-                  <input required placeholder="Enter 6-digit OTP" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} className="otp-code-input" />
-                  <button className="btn-primary" type="submit" disabled={submitting} style={{ flex: 1 }}>
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <input required placeholder="Enter 6-digit OTP" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} className="otp-code-input" style={{ flex: "1 1 180px" }} />
+                  <button className="btn-primary" type="submit" disabled={submitting} style={{ flex: "1 1 220px" }}>
                     {submitting ? "Authenticating & Casting Ballot…" : "Verify & Cast Anonymous Ballot"}
                   </button>
                 </div>
@@ -2391,33 +2402,33 @@ function VoteSuccessPage() {
         Vote Recorded Successfully
       </span>
 
-      <h1 style={{ color: "var(--text-main)", fontSize: 36, fontWeight: 800, margin: "0 0 8px", fontFamily: "var(--font-royal)" }}>
+      <h1 className="vote-success-title" style={{ color: "var(--text-main)", fontWeight: 800, margin: "0 0 8px", fontFamily: "var(--font-royal)" }}>
         Your Ballot is Secured!
       </h1>
 
-      <p style={{ color: "var(--text-secondary)", fontSize: 16, maxWidth: 480, margin: "0 auto 32px" }}>
+      <p style={{ color: "var(--text-secondary)", fontSize: 15, maxWidth: 480, margin: "0 auto 28px", lineHeight: 1.5 }}>
         Thank you for participating in <strong style={{ color: "var(--text-main)" }}>{pollTitle}</strong>.
         Your anonymous vote has been cryptographically recorded and cannot be altered.
       </p>
 
       {/* Info cards */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%", maxWidth: 520, marginBottom: 36 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%", maxWidth: 520, marginBottom: 32 }}>
         {candidateName && (
-          <div style={{ background: "var(--light-surface)", border: "1px solid var(--light-border)", borderRadius: 14, padding: "16px 22px", textAlign: "left", boxShadow: "var(--shadow-apple)" }}>
+          <div style={{ background: "var(--light-surface)", border: "1px solid var(--light-border)", borderRadius: 14, padding: "16px 20px", textAlign: "left", boxShadow: "var(--shadow-apple)" }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: 4 }}>Candidate Voted For</div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: "var(--text-main)" }}>{candidateName}</div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "var(--text-main)" }}>{candidateName}</div>
           </div>
         )}
         {receipt && (
-          <div style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 14, padding: "16px 22px", textAlign: "left" }}>
+          <div style={{ background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.3)", borderRadius: 14, padding: "16px 20px", textAlign: "left" }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#059669", marginBottom: 4 }}>🔐 Cryptographic Receipt Code</div>
-            <code style={{ fontSize: 17, fontWeight: 700, color: "#059669", letterSpacing: 1 }}>{receipt}</code>
+            <code style={{ fontSize: 15, fontWeight: 700, color: "#059669", letterSpacing: 1, wordBreak: "break-all" }}>{receipt}</code>
             <p style={{ fontSize: 12, color: "var(--text-secondary)", margin: "6px 0 0" }}>
               Keep this receipt. It proves your vote was counted without revealing your identity.
             </p>
           </div>
         )}
-        <div style={{ background: "var(--light-surface)", border: "1px solid var(--light-border)", borderRadius: 14, padding: "14px 22px", display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--shadow-apple)" }}>
+        <div style={{ background: "var(--light-surface)", border: "1px solid var(--light-border)", borderRadius: 14, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, boxShadow: "var(--shadow-apple)" }}>
           <span style={{ fontSize: 22 }}>🔒</span>
           <p style={{ fontSize: 13, color: "var(--text-secondary)", margin: 0, textAlign: "left" }}>
             Your vote is stored in an anonymous ballot box with <strong style={{ color: "var(--text-main)" }}>zero link</strong> to your identity. Even admins cannot see who you voted for.
@@ -2426,11 +2437,11 @@ function VoteSuccessPage() {
       </div>
 
       {/* Actions */}
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center" }}>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", width: "100%", maxWidth: 440 }}>
         {pollId && (
           <button
             className="btn-primary"
-            style={{ width: "auto", padding: "12px 28px", background: "linear-gradient(135deg,#10b981,#059669)" }}
+            style={{ width: "100%", padding: "12px 24px", background: "linear-gradient(135deg,#10b981,#059669)" }}
             onClick={() => navigate(`/polls/${pollId}`)}
           >
             📊 View Live Tally
@@ -2438,7 +2449,7 @@ function VoteSuccessPage() {
         )}
         <button
           className="btn-secondary"
-          style={{ padding: "12px 28px", width: "auto" }}
+          style={{ width: "100%", padding: "12px 24px" }}
           onClick={() => navigate("/")}
         >
           ← Back to Elections

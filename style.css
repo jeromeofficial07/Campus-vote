@@ -1514,31 +1514,112 @@ button {
   min-width: 280px;
 }
 
-/* ---------- Responsive & Dynamic Layout Polish ---------- */
+/* =====================================================================
+   COMPREHENSIVE MOBILE RESPONSIVE SUITE
+   ===================================================================== */
 
-@media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
+/* Global Mobile Overflow Safeguards */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+  -webkit-text-size-adjust: 100%;
+}
 
-  .form-grid {
-    grid-template-columns: 1fr !important;
+#root, .app-shell {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Ensure smooth touch on mobile */
+button, input, select, textarea, a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ----------------- Tablets & Small Laptops (<= 900px) ----------------- */
+@media (max-width: 900px) {
+  .container {
+    padding: 0 18px;
   }
 
   .navbar {
     padding: 12px 18px;
-    flex-direction: column;
-    gap: 12px;
   }
 
-  .navbar nav {
-    flex-wrap: wrap;
-    justify-content: center;
+  .poll-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+}
+
+/* ----------------- Standard Mobile & Tablets (<= 768px) ----------------- */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 16px;
+  }
+
+  /* Page Headers */
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .page-header h1 {
+    font-size: 26px;
+    line-height: 1.25;
+  }
+
+  .page-header p {
+    font-size: 14px;
+  }
+
+  /* Navigation Bar */
+  .navbar {
+    padding: 10px 14px;
+    flex-direction: column;
+    align-items: stretch;
     gap: 10px;
   }
 
+  .navbar .brand {
+    justify-content: space-between;
+    width: 100%;
+    font-size: 19px;
+  }
+
+  .navbar nav {
+    display: flex;
+    align-items: center;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
+    padding: 2px 0 6px;
+    scrollbar-width: none;
+    width: 100%;
+  }
+
+  .navbar nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navbar nav a,
+  .navbar nav button {
+    flex-shrink: 0;
+    font-size: 12.5px;
+    padding: 6px 12px;
+  }
+
+  /* Form Grids */
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  /* Filter Bar & Search */
   .filter-bar {
     flex-direction: column;
     align-items: stretch;
@@ -1549,6 +1630,60 @@ button {
     overflow-x: auto;
     width: 100%;
     justify-content: flex-start;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .segmented-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .segmented-tabs button {
+    flex-shrink: 0;
+    font-size: 12.5px;
+    padding: 8px 14px;
+  }
+
+  .search-input-wrap {
+    width: 100%;
+  }
+
+  /* Ballots & Cards */
+  .ballot {
+    padding: 22px 16px;
+    border-radius: var(--radius-md);
+  }
+
+  .poll-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .poll-card {
+    padding: 20px 16px;
+  }
+
+  /* Election Creation Form */
+  .form-section-card {
+    padding: 18px 16px;
+    margin-bottom: 18px;
+    border-radius: var(--radius-md);
+  }
+
+  .schedule-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .schedule-item-box {
+    padding: 14px 16px;
+  }
+
+  /* Candidate Builder Card */
+  .candidate-builder-card {
+    padding: 16px 14px;
   }
 
   .card-top-bar {
@@ -1557,9 +1692,204 @@ button {
     gap: 10px;
   }
 
+  /* Responsive Tables */
+  .audit-table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .audit-table th,
+  .audit-table td {
+    padding: 10px 12px;
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+
+  /* Turnout Breakdowns */
   .emergency-control-panel {
     width: 100%;
     min-width: unset;
+  }
+}
+
+/* ----------------- Compact Smartphones (<= 600px) ----------------- */
+@media (max-width: 600px) {
+  .container {
+    padding: 0 12px;
+  }
+
+  .page-header h1 {
+    font-size: 23px;
+  }
+
+  /* Candidate Voting Card on Mobile */
+  .candidate-row {
+    padding: 16px 14px;
+    gap: 14px;
+    border-radius: var(--radius-md);
+    margin-bottom: 14px;
+  }
+
+  .candidate-row .avatar {
+    width: 68px;
+    height: 68px;
+    font-size: 26px;
+    border-radius: 16px;
+    border-width: 2px;
+  }
+
+  .candidate-row .info strong {
+    font-size: 17px;
+  }
+
+  .candidate-row .info .candidate-name-row {
+    gap: 6px;
+  }
+
+  .candidate-row .info .candidate-badges-row {
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  .candidate-academic-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+
+  .candidate-row .motto-text {
+    font-size: 12.5px;
+  }
+
+  .promises-box {
+    padding: 10px 12px;
+    margin-top: 6px;
+  }
+
+  .promises-box p {
+    font-size: 12.5px !important;
+  }
+
+  .candidate-row .radio {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* OTP Form on Mobile */
+  .otp-code-input {
+    width: 100%;
+    font-size: 18px !important;
+    letter-spacing: 4px;
+    text-align: center;
+  }
+
+  /* Image Upload Wrap in Create Poll */
+  .image-upload-wrap {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .image-upload-wrap .avatar-preview {
+    margin: 0 auto;
+  }
+
+  .upload-url-input {
+    min-width: 100% !important;
+  }
+
+  /* Time Picker in Create Poll */
+  .time-picker-row-assembled {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .time-picker-row-assembled .date-input {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .time-pill-group {
+    width: 100%;
+    justify-content: center;
+    padding: 6px 8px;
+  }
+
+  .schedule-badge-info {
+    font-size: 11.5px;
+    padding: 6px 10px;
+  }
+
+  /* Auth Pages (Login / Register) */
+  .velvet-page {
+    padding: 24px 12px;
+  }
+
+  .auth-card {
+    padding: 28px 18px;
+    border-radius: var(--radius-md);
+  }
+
+  .auth-card h1 {
+    font-size: 24px;
+  }
+
+  /* Vote Success Page */
+  .success-tick-wrap {
+    width: 68px;
+    height: 68px;
+  }
+
+  .vote-success-title {
+    font-size: 24px !important;
+  }
+
+  /* CSV Import Box */
+  .csv-import-container {
+    padding: 18px 14px;
+  }
+
+  .csv-top-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .csv-quick-actions {
+    width: 100%;
+  }
+
+  .csv-btn-pill {
+    flex: 1 1 auto;
+    justify-content: center;
+    font-size: 11.5px;
+    padding: 6px 10px;
+  }
+}
+
+/* ----------------- Extra Small Devices (<= 400px) ----------------- */
+@media (max-width: 400px) {
+  .page-header h1 {
+    font-size: 20px;
+  }
+
+  .candidate-row .avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 22px;
+    border-radius: 12px;
+  }
+
+  .candidate-row .info strong {
+    font-size: 15.5px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 10px 16px;
+    font-size: 13.5px;
   }
 }
 

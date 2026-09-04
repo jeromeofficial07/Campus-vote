@@ -67,7 +67,7 @@ class Poll(db.Model):
         "AnonymousBallot", backref="poll", lazy=True, cascade="all, delete-orphan"
     )
 
-    def to_dict(self, include_results=False):
+    def to_dict(self, include_results=False, cached_students=None, cached_participations=None):
         # Auto-close election if end_time has expired
         curr_status = self.status or ("Live" if self.is_active else "Closed")
         curr_active = self.is_active
@@ -75,12 +75,15 @@ class Poll(db.Model):
             curr_status = "Closed"
             curr_active = False
 
-        students = User.query.filter_by(role="student").all()
+        students = cached_students if cached_students is not None else User.query.filter_by(role="student").all()
         total_eligible = len(students)
 
-        participations = VoterParticipation.query.filter_by(poll_id=self.id).all()
-        legacy_votes = Vote.query.filter_by(poll_id=self.id).all()
-        voted_user_ids = set([p.user_id for p in participations] + [v.user_id for v in legacy_votes])
+        if cached_participations is not None:
+            voted_user_ids = cached_participations.get(self.id, set())
+        else:
+            participations = VoterParticipation.query.filter_by(poll_id=self.id).all()
+            legacy_votes = Vote.query.filter_by(poll_id=self.id).all()
+            voted_user_ids = set([p.user_id for p in participations] + [v.user_id for v in legacy_votes])
 
         votes_cast = len(voted_user_ids)
         remaining_voters = max(0, total_eligible - votes_cast)

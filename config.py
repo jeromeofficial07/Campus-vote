@@ -30,3 +30,6 @@ class Config:
     GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 
     CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "*").split(",")
+
+    # Enable browser caching for static assets (React, CSS, images) for fast load speeds
+    SEND_FILE_MAX_AGE_DEFAULT = 3600

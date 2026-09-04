@@ -11,58 +11,76 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
 
 def _send_gmail_otp(to_email, otp_code, student_name="Student"):
-    """Send OTP via Gmail SMTP using GMAIL_USER and GMAIL_APP_PASSWORD."""
-    gmail_user = os.environ.get("GMAIL_USER") or os.environ.get("SMTP_USER")
-    gmail_pass = os.environ.get("GMAIL_APP_PASSWORD") or os.environ.get("SMTP_PASSWORD")
+    """Send OTP via Gmail SMTP using GMAIL_USER and GMAIL_APP_PASSWORD with SSL/TLS dual fallback."""
+    raw_user = os.environ.get("GMAIL_USER") or os.environ.get("SMTP_USER") or ""
+    raw_pass = os.environ.get("GMAIL_APP_PASSWORD") or os.environ.get("SMTP_PASSWORD") or ""
+
+    gmail_user = raw_user.strip().strip('"').strip("'")
+    # Clean 16-character Google App Password (remove spaces if user pasted 'abcd efgh ijkl mnop')
+    gmail_pass = raw_pass.strip().strip('"').strip("'").replace(" ", "")
 
     if not gmail_user or not gmail_pass:
-        print(f"[OTP DEV FALLBACK] Gmail credentials not set. OTP code for {to_email}: {otp_code}")
-        return False, "Gmail credentials not configured."
+        err_msg = "GMAIL_USER and GMAIL_APP_PASSWORD environment variables are not configured on the server."
+        print(f"[OTP DEV FALLBACK] {err_msg} OTP code for {to_email}: {otp_code}")
+        return False, err_msg
 
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"🔐 Your Campus Vote Verification OTP: {otp_code}"
-        msg["From"] = f"Campus Vote <{gmail_user}>"
-        msg["To"] = to_email
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"🔐 Your Campus Vote Verification OTP: {otp_code}"
+    msg["From"] = f"Campus Vote <{gmail_user}>"
+    msg["To"] = to_email
 
-        html = f"""
-        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
-            <div style="background: linear-gradient(135deg, #CF4173 0%, #5D3140 100%); color: white; padding: 20px; text-align: center; border-radius: 8px;">
-                <h2 style="margin: 0; font-size: 22px;">🗳️ Campus Vote</h2>
-                <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Secure Student Election Verification</p>
-            </div>
-            <div style="padding: 20px 4px; color: #1e293b;">
-                <p style="font-size: 15px;">Hello <strong>{student_name}</strong>,</p>
-                <p style="font-size: 14px; line-height: 1.5; color: #475569;">
-                    Your one-time security verification code to cast your anonymous ballot is:
-                </p>
-                <div style="text-align: center; margin: 24px 0;">
-                    <div style="display: inline-block; background: #fdf2f8; border: 2px dashed #CF4173; border-radius: 8px; padding: 12px 28px;">
-                        <span style="font-family: monospace; font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #CF4173;">{otp_code}</span>
-                    </div>
-                </div>
-                <p style="color: #64748b; font-size: 13px; line-height: 1.5;">
-                    ⏳ This code expires in <strong>10 minutes</strong>. If you did not initiate this request, you can safely ignore this message.
-                </p>
-                <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 16px 0;" />
-                <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">
-                    🔒 100% Anonymous Decoupled Voting — Your candidate choice is never linked to your account identity.
-                </p>
-            </div>
+    html = f"""
+    <div style="font-family: 'Space Grotesk', 'Inter', -apple-system, sans-serif; max-width: 500px; margin: auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+        <div style="background: linear-gradient(135deg, #ea463a 0%, #101424 100%); color: white; padding: 22px; text-align: center; border-radius: 10px;">
+            <h2 style="margin: 0; font-size: 24px; font-weight: 800;">🗳️ Campus Vote</h2>
+            <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">Secure Student Election Verification</p>
         </div>
-        """
-        msg.attach(MIMEText(html, "html"))
+        <div style="padding: 22px 6px; color: #101424;">
+            <p style="font-size: 15px;">Hello <strong>{student_name}</strong>,</p>
+            <p style="font-size: 14px; line-height: 1.5; color: #475569;">
+                Your one-time security verification code to cast your anonymous ballot is:
+            </p>
+            <div style="text-align: center; margin: 24px 0;">
+                <div style="display: inline-block; background: #fdf2f8; border: 2px dashed #ea463a; border-radius: 10px; padding: 14px 30px;">
+                    <span style="font-family: monospace; font-size: 34px; font-weight: 800; letter-spacing: 6px; color: #ea463a;">{otp_code}</span>
+                </div>
+            </div>
+            <p style="color: #64748b; font-size: 13px; line-height: 1.5;">
+                ⏳ This code expires in <strong>10 minutes</strong>. If you did not initiate this request, you can safely ignore this message.
+            </p>
+            <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 18px 0;" />
+            <p style="font-size: 11.5px; color: #94a3b8; text-align: center; margin: 0;">
+                🔒 100% Anonymous Decoupled Voting — Your candidate choice is never linked to your account identity.
+            </p>
+        </div>
+    </div>
+    """
+    msg.attach(MIMEText(html, "html"))
 
-        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=10)
+    # Method 1: Try Port 465 SSL (Direct SSL, recommended on cloud providers)
+    try:
+        server = smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=12)
+        server.login(gmail_user, gmail_pass)
+        server.sendmail(gmail_user, [to_email], msg.as_string())
+        server.quit()
+        print(f"[OTP GMAIL SUCCESS (SSL 465)] Successfully sent OTP to {to_email}")
+        return True, "Email sent successfully via Gmail SSL."
+    except Exception as e_ssl:
+        print(f"[OTP GMAIL SSL 465 FAILED] {e_ssl}. Trying STARTTLS on port 587...")
+
+    # Method 2: Try Port 587 STARTTLS as fallback
+    try:
+        server = smtplib.SMTP("smtp.gmail.com", 587, timeout=12)
         server.starttls()
         server.login(gmail_user, gmail_pass)
         server.sendmail(gmail_user, [to_email], msg.as_string())
         server.quit()
-        print(f"[OTP GMAIL SUCCESS] Successfully sent OTP to {to_email}")
-        return True, "Email sent successfully"
-    except Exception as e:
-        print(f"[OTP GMAIL ERROR] Failed to send to {to_email}: {e}")
-        return False, str(e)
+        print(f"[OTP GMAIL SUCCESS (STARTTLS 587)] Successfully sent OTP to {to_email}")
+        return True, "Email sent successfully via Gmail TLS."
+    except Exception as e_tls:
+        error_detail = f"Failed to send email via Gmail SMTP: {e_tls}"
+        print(f"[OTP GMAIL ERROR] {error_detail}")
+        return False, error_detail
 
 
 @auth_bp.post("/register")
@@ -158,9 +176,10 @@ def send_otp():
     sent_via_email, mail_status = _send_gmail_otp(user.email, code, user.name)
 
     return jsonify({
-        "message": f"6-digit Security Verification Code sent to {user.email}",
-        "otp_demo": code if not sent_via_email else None,  # Provided in dev mode if SMTP not configured
+        "message": f"6-digit Security Verification Code sent to {user.email}" if sent_via_email else f"Security code generated for {user.email}",
+        "otp_demo": code if not sent_via_email else None,  # Provided as fallback if SMTP credentials not yet added on server
         "sent_via_email": sent_via_email,
+        "mail_status": mail_status,
         "expires_in_minutes": 10
     }), 200
 

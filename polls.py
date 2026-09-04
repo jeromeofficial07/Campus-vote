@@ -27,8 +27,25 @@ def _is_admin():
 @polls_bp.get("")
 @jwt_required()
 def list_polls():
+    from models import VoterParticipation
     polls = Poll.query.order_by(Poll.created_at.desc()).all()
-    return jsonify([p.to_dict(include_results=True) for p in polls]), 200
+    if not polls:
+        return jsonify([]), 200
+
+    students = User.query.filter_by(role="student").all()
+    participations = VoterParticipation.query.all()
+    legacy_votes = Vote.query.all()
+
+    part_map = {}
+    for p in participations:
+        part_map.setdefault(p.poll_id, set()).add(p.user_id)
+    for v in legacy_votes:
+        part_map.setdefault(v.poll_id, set()).add(v.user_id)
+
+    return jsonify([
+        p.to_dict(include_results=True, cached_students=students, cached_participations=part_map)
+        for p in polls
+    ]), 200
 
 
 @polls_bp.post("")
