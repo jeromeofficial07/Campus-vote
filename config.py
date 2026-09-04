@@ -19,7 +19,7 @@ class Config:
     JWT_SECRET_KEY = os.environ.get(
         "JWT_SECRET_KEY", "campus-vote-jwt-secret-key-32chars-minimum!"
     )
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=8)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=2)
 
     SECRET_KEY = os.environ.get(
         "SECRET_KEY", "campus-vote-app-secret-key-32chars-minimum!"
