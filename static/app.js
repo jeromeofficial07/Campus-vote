@@ -943,7 +943,7 @@ function CreatePollPage() {
             </button>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 14, marginTop: 10 }}>
+          <div className="form-actions-row" style={{ display: "flex", justifyContent: "flex-end", gap: 14, marginTop: 10 }}>
             <button type="button" className="btn-secondary" style={{ width: "auto", padding: "12px 28px" }} onClick={() => navigate("/")}>
               Cancel
             </button>
